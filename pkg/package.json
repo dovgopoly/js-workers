@@ -1,0 +1,11 @@
+{
+  "name": "aptos_pollard_kangaroo_wasm",
+  "version": "0.0.0",
+  "files": [
+    "aptos_pollard_kangaroo_wasm_bg.wasm",
+    "aptos_pollard_kangaroo_wasm.js",
+    "aptos_pollard_kangaroo_wasm.d.ts"
+  ],
+  "main": "aptos_pollard_kangaroo_wasm.js",
+  "types": "aptos_pollard_kangaroo_wasm.d.ts"
+}
