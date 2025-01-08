@@ -3,7 +3,7 @@ import { create_kangaroo, Table } from "../pkg";
 
 const startMainTime = performance.now();
 
-let kangaroo = create_kangaroo(Table.Table48);
+const kangaroo = create_kangaroo(Table.Table48);
 
 const elapsedMainTime = performance.now() - startMainTime;
 
