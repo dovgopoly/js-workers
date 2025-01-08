@@ -1,11 +1,14 @@
 import { spawn, Pool, Worker } from "threads"
 import { generateKeyPair } from "./kangaroo";
 
+const WORKERS = 4;
+const MAX_TIME = 1500n;
+
 (async () => {
     const balance = Array.from({ length: 4 }).map(_ => ({
         ...generateKeyPair(48),
         decrypted: undefined,
-        tasks: [] as any[],
+        taskCount: 0,
     }));
 
     console.log("Balance:", balance);
@@ -16,60 +19,60 @@ import { generateKeyPair } from "./kangaroo";
     });
 
     const pool = Pool(() => spawn(new Worker("./worker")), {
-       size: 4
+       size: WORKERS,
     });
 
     const startMainTime = performance.now();
 
-    pool.events().subscribe(event => {
-        if (event.type === "taskQueueDrained") {
-            let idx = -1;
+    const task = () => {
+        let idx = -1;
 
-            balance.forEach((chunk, i) => {
-                if (
-                    chunk.decrypted === undefined &&
-                    (idx === -1 || chunk.tasks.length < balance[idx].tasks.length)
-                ) {
-                    idx = i;
-                }
-            });
-
-            if (idx === -1) {
-                resolveAllTasks(true);
-                return;
+        balance.forEach((chunk, i) => {
+            if (
+                chunk.decrypted === undefined &&
+                (idx === -1 || chunk.taskCount < balance[idx].taskCount)
+            ) {
+                idx = i;
             }
+        });
 
-            const task = pool.queue(async worker => {
-                const sk = await worker.solve(balance[idx].publicKey);
-
-                if (sk !== undefined) {
-                    balance[idx].decrypted = sk;
-
-                    for (const t of balance[idx].tasks) {
-                        await t.cancel();
-                    }
-                }
-            });
-
-            balance[idx].tasks.push(task);
+        if (idx === -1) {
+            resolveAllTasks(true);
+            return;
         }
-    });
 
-    balance.forEach(({ publicKey }, idx) => {
-        const task = pool.queue(async worker => {
-            const sk = await worker.solve(publicKey);
+        console.log(`Calling ${idx} at ${performance.now() - startMainTime}ms`);
+
+        ++balance[idx].taskCount;
+
+        pool.queue(async worker => {
+            const sk = await worker.solve(balance[idx].publicKey, MAX_TIME);
+
+            --balance[idx].taskCount;
 
             if (sk !== undefined) {
                 balance[idx].decrypted = sk;
 
-                for (const t of balance[idx].tasks) {
-                    await t.cancel();
-                }
+                console.log(`Decrypted ${idx} at ${performance.now() - startMainTime}ms`);
+            } else {
+                console.log(`Failed ${idx} at ${performance.now() - startMainTime}ms`);
             }
         });
+    }
 
-        balance[idx].tasks.push(task);
+    pool.events().subscribe(event => {
+        if (event.type === "taskFailed") {
+            console.error(event.error);
+        }
+
+        if (event.type === "taskCompleted" || event.type == "taskQueueDrained") {
+            task();
+        }
     });
+
+    for (let i = 0; i < WORKERS; ++i) {
+        task();
+    }
 
     await allTasksCompleted;
     await pool.terminate(true);

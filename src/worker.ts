@@ -7,7 +7,7 @@ let kangaroo = create_kangaroo(Table.Table48);
 
 const elapsedMainTime = performance.now() - startMainTime;
 
-console.log(`Worked init in: ${elapsedMainTime / 1000} seconds`);
+console.log(`Worker init in: ${elapsedMainTime / 1000} seconds`);
 
 expose({
     solve(pk: Uint8Array, maxTime?: bigint): bigint | undefined {
