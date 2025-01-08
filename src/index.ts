@@ -65,7 +65,7 @@ const MAX_TIME = 1500n;
             console.error(event.error);
         }
 
-        if (event.type === "taskCompleted" || event.type == "taskQueueDrained") {
+        if (event.type === "taskCompleted") {
             task();
         }
     });
