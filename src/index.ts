@@ -1,11 +1,12 @@
 import { spawn, Pool, Worker } from "threads"
 import { generateKeyPair } from "./kangaroo";
 
-const WORKERS = 4;
-const MAX_TIME = 1500n;
+const CHUNK_COUNT = 2;
+const WORKERS = 6;
+const MAX_TIME = 2000n;
 
 (async () => {
-    const balance = Array.from({ length: 4 }).map(_ => ({
+    const balance = Array.from({ length: CHUNK_COUNT }).map(_ => ({
         ...generateKeyPair(48),
         decrypted: undefined,
         taskCount: 0,
