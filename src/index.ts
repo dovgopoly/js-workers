@@ -4,15 +4,51 @@ import { generateKeyPair } from "./kangaroo";
 const CHUNK_COUNT = 2;
 const WORKERS = 6;
 const MAX_TIME = 2000n;
+const SECRET_COUNT = 200;
 
 (async () => {
+    let time = 0
+    let highestTime = 0
+    let lowestTime = 9999999999999;
+
+    for (let i = 0; i < SECRET_COUNT; ++i) {
+        const startMainTime = performance.now();
+
+        await test();
+
+        const endMainTime = performance.now();
+
+        const elapsedMainTime = endMainTime - startMainTime;
+
+        time += elapsedMainTime / 1000
+
+        if (elapsedMainTime > highestTime) {
+            highestTime = elapsedMainTime
+        }
+
+        if (elapsedMainTime < lowestTime) {
+            lowestTime = elapsedMainTime
+        }
+
+        console.log(`Main time: ${elapsedMainTime/1000} seconds`);
+        console.log("Processed " + (i + 1) + " / " + SECRET_COUNT + " secrets")
+        console.log("Mean time: " + time / (i+1) + " seconds")
+        console.log("----\n")
+    }
+
+    console.log("Highest time: " + highestTime/1000 + " seconds")
+    console.log("Lowest time: " + lowestTime/1000 + " seconds")
+    console.log("Mean time: " + time / SECRET_COUNT + " seconds");
+})();
+
+async function test() {
     const balance = Array.from({ length: CHUNK_COUNT }).map(_ => ({
         ...generateKeyPair(48),
         decrypted: undefined,
         taskCount: 0,
     }));
 
-    console.log("Balance:", balance);
+    // console.log("Balance:", balance);
 
     let resolveAllTasks: any;
     const allTasksCompleted = new Promise((resolve) => {
@@ -23,7 +59,7 @@ const MAX_TIME = 2000n;
        size: WORKERS,
     });
 
-    const startMainTime = performance.now();
+    // const startMainTime = performance.now();
 
     const task = () => {
         let idx = -1;
@@ -42,7 +78,7 @@ const MAX_TIME = 2000n;
             return;
         }
 
-        console.log(`Calling ${idx} at ${performance.now() - startMainTime}ms`);
+        //console.log(`Calling ${idx} at ${performance.now() - startMainTime}ms`);
 
         ++balance[idx].taskCount;
 
@@ -54,9 +90,9 @@ const MAX_TIME = 2000n;
             if (sk !== undefined) {
                 balance[idx].decrypted = sk;
 
-                console.log(`Decrypted ${idx} at ${performance.now() - startMainTime}ms`);
+                //console.log(`Decrypted ${idx} at ${performance.now() - startMainTime}ms`);
             } else {
-                console.log(`Failed ${idx} at ${performance.now() - startMainTime}ms`);
+                //console.log(`Failed ${idx} at ${performance.now() - startMainTime}ms`);
             }
         });
     }
@@ -78,9 +114,9 @@ const MAX_TIME = 2000n;
     await allTasksCompleted;
     await pool.terminate(true);
 
-    const elapsedMainTime = performance.now() - startMainTime;
+    // const elapsedMainTime = performance.now() - startMainTime;
 
-    console.log(`Main time: ${elapsedMainTime / 1000} seconds`);
+    //console.log(`Main time: ${elapsedMainTime / 1000} seconds`);
 
-    console.log(balance);
-})();
+    //console.log(balance);
+}

@@ -11,11 +11,7 @@
   "description": "",
   "dependencies": {
     "@noble/curves": "^1.8.0",
-    "@types/node": "^22.10.5",
-    "comlink": "^4.4.2",
-    "js-sha256": "^0.11.0",
-    "threads": "^1.7.0",
-    "tiny-worker": "^2.3.0"
+    "threads": "^1.7.0"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
