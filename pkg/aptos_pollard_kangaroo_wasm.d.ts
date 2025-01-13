@@ -8,5 +8,5 @@ export enum Table {
 export class WASMKangaroo {
   private constructor();
   free(): void;
-  solve_dlp(pk: Uint8Array, max_time?: bigint): bigint | undefined;
+  solve_dlp(pk: Uint8Array, max_time?: bigint | null): bigint | undefined;
 }

@@ -3,7 +3,7 @@ import { generateKeyPair } from "./kangaroo";
 
 const CHUNK_COUNT = 2;
 const WORKERS = 6;
-const MAX_TIME = 2000n;
+const MAX_TIME = 3000n;
 const SECRET_COUNT = 200;
 
 (async () => {
